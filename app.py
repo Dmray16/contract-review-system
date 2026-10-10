@@ -1,5 +1,6 @@
 import streamlit as st
 from langgraph.graph import StateGraph, START, END
+import re
 
 # Agent 1: Split the contract into chunks
 def agent1_chunker(state):
@@ -18,23 +19,23 @@ def agent2_compliance(state):
     results = []
 
     for chunk in chunks:
-        if "deliver" in chunk.lower():
-            result = "Delivery obligation identified."
-        elif "pay" in chunk.lower():
+        text = chunk.lower()
+        print("DEBUG CLAUSE:", repr(text))
+
+        if re.search(r"\bpayment\b|\bpay\b", text):
             result = "Payment obligation identified."
-        elif "terminate" in chunk.lower():
+        elif re.search(r"\bdelivery\b|\bdeliver\b", text):
+            result = "Delivery obligation identified."
+        elif re.search(r"\btermination\b|\bterminate\b", text):
             result = "Termination condition identified."
         else:
             result = "No specific compliance requirement identified."
-
         results.append(result)
 
     return {
         **state,
         "compliance": results
     }
-
-
 # Agent 3: Evaluate risk and compile the report
 def agent3_risk(state):
     chunks = state["chunks"]
